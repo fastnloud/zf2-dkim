@@ -5,7 +5,8 @@ return array (
         'params' => array(
             'd'    => 'example.com', // domain
             'h'    => 'from:to:subject', // headers to sign
-            's'    => 'dec2013', // domain key selector
-        )
+            's'    => 'jan2014', // domain key selector
+        ),
+        'private_key' => 'your private key' // add this in your local.php
     )
 );
