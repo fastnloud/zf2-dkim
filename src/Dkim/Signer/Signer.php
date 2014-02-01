@@ -7,7 +7,7 @@ use Zend\Mime\Message as MimeMessage;
 use Zend\Mail\Header;
 
 /**
- * Class Signer;
+ * Signer.
  * @package Dkim\Signer
  */
 class Signer
@@ -103,6 +103,26 @@ class Signer
     }
 
     /**
+     * Set Dkim param.
+     *
+     * @param string $key
+     * @param string $value
+     * @throws \Exception
+     * @return void
+     */
+    public function setParam($key, $value)
+    {
+        if (!array_key_exists($key, $this->getParams())) {
+            throw new \Exception("'$key' is not a valid param.");
+        }
+
+        $params = $this->getParams();
+        $params[$key] = $value;
+
+        $this->setParams($params);
+    }
+
+    /**
      * Format message for singing.
      *
      * @param Message $message
@@ -141,7 +161,7 @@ class Signer
      * @param Message $message
      * @return void
      */
-    private function canonizeHeaders(Message &$message)
+    private function canonizeHeaders(Message $message)
     {
         $params  = $this->getParams();
         $headersToSign = explode(':', $params['h']);
