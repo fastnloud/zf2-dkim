@@ -2,6 +2,7 @@
 
 namespace Dkim\Signer;
 
+use Dkim\Header\Dkim;
 use Zend\Mail\Message;
 use Zend\Mime\Message as MimeMessage;
 use Zend\Mail\Header;
@@ -19,15 +20,21 @@ class Signer
      * @var array
      */
     private $params = array(
-        'd'  => '',
-        'h'  => '',
-        's'  => ''
+        // optional params having a default value set
+        'v'  => '1',
+        'a'  => 'rsa-sha1',
+
+        // required to set either in your config file or through the setParam method before signing (see
+        // module.config.dist file)
+        'd'  => '', // domain
+        'h'  => '', // headers to sign
+        's'  => '', // domain key selector
     );
 
     /**
      * Empty DKIM header.
      *
-     * @var Header\GenericHeader
+     * @var Dkim
      */
     private $emptyDkimHeader;
 
@@ -41,9 +48,9 @@ class Signer
     /**
      * The private key being used.
      *
-     * @var OpenSSL key
+     * @var bool|OpenSSL key
      */
-    private $privateKey;
+    private $privateKey = false;
 
     /**
      * Set and validate DKIM options.
@@ -58,22 +65,14 @@ class Signer
         } else {
             $config = $options['dkim'];
 
-            if (isset($config['private_key'])) {
+            if (isset($config['private_key']) && !empty($config['private_key'])) {
                 $this->setPrivateKey($config['private_key']);
-            } else {
-                throw new \Exception("No 'private_key' given.");
             }
 
-            if(isset($config['params']) && is_array($config['params'])) {
-                foreach ($this->getParams() as $key => $value) {
-                    if (!isset($config['params'][$key])) {
-                        throw new \Exception("No DKIM param '$key' given.");
-                    }
+            if(isset($config['params']) && is_array($config['params']) && !empty($config['params'])) {
+                foreach ($config['params'] as $key => $value) {
+                    $this->setParam($key, $value);
                 }
-
-                $this->setParams($config['params']);
-            } else {
-                throw new \Exception("No 'params' given.");
             }
         }
     }
@@ -113,13 +112,46 @@ class Signer
     public function setParam($key, $value)
     {
         if (!array_key_exists($key, $this->getParams())) {
-            throw new \Exception("'$key' is not a valid param.");
+            throw new \Exception("Invalid param '$key' given.");
         }
 
-        $params = $this->getParams();
-        $params[$key] = $value;
+        $this->params[$key] = $value;
+    }
 
-        $this->setParams($params);
+    /**
+     * Set multiple Dkim params.
+     *
+     * @param array $params
+     * @return void
+     */
+    public function setParams(array $params)
+    {
+        if (!empty($params)) {
+            foreach ($params as $key => $value) {
+                $this->setParam($key, $value);
+            }
+        }
+    }
+
+    /**
+     * Set (generate) OpenSSL key.
+     *
+     * @param string $privateKey
+     * @return void
+     */
+    public function setPrivateKey($privateKey)
+    {
+        $privateKey = <<<PKEY
+-----BEGIN RSA PRIVATE KEY-----
+$privateKey
+-----END RSA PRIVATE KEY-----
+PKEY;
+
+        if (!$privateKey = @openssl_pkey_get_private($privateKey)) {
+            throw new \Exception("Invalid private key given.");
+        }
+
+        $this->privateKey = $privateKey;
     }
 
     /**
@@ -172,7 +204,7 @@ class Signer
 
             if (in_array($fieldName, $headersToSign) || 'dkim-signature' == $fieldName) {
                 $this->appendCanonizedHeader(
-                    $fieldName . ':' . preg_replace('/\s+/', ' ', $header->getFieldValue()) . "\r\n"
+                    $fieldName . ':' . preg_replace('/\s+/', ' ', $header->getFieldValue(Header\HeaderInterface::FORMAT_ENCODED)) . "\r\n"
                 );
             }
         }
@@ -189,10 +221,15 @@ class Signer
         // fetch configurable params
         $configurableParams = $this->getParams();
 
+        // check if the required params are set for singing.
+        if (empty($configurableParams['d']) || empty($configurableParams['h']) || empty($configurableParams['s'])) {
+            throw new \Exception('Unable to sign message: missing params');
+        }
+
         // final params
         $params = array(
-            'v'    => '1',
-            'a'    => 'rsa-sha1',
+            'v'    => $configurableParams['v'],
+            'a'    => $configurableParams['a'],
             'bh'   => $this->getBodyHash($message),
             'c'    => 'relaxed',
             'd'    => $configurableParams['d'],
@@ -206,12 +243,8 @@ class Signer
             $string .= $key . '=' . $value . '; ';
         }
 
-        $this->setEmptyDkimHeader(
-            new Header\GenericHeader(
-                'DKIM-Signature',
-                substr(trim($string),0, -1)
-            )
-        );
+        // set empty dkim header
+        $this->setEmptyDkimHeader(new Dkim(substr(trim($string),0, -1)));
     }
 
     /**
@@ -221,6 +254,10 @@ class Signer
      */
     private function generateSignature()
     {
+        if (!$this->getPrivateKey()) {
+            throw new \Exception('No private key given.');
+        }
+
         $signature = '';
         openssl_sign($this->getCanonizedHeaders(), $signature, $this->getPrivateKey());
 
@@ -241,13 +278,10 @@ class Signer
         // first remove the empty dkim header
         $message->getHeaders()->removeHeader('DKIM-Signature');
 
-        // generate new header set
-        $headerSet[] = new Header\GenericHeader(
-            'DKIM-Signature',
-            $this->getEmptyDkimHeader()->getFieldValue() . $signature
-        );
+        // generate new header set starting with the dkim header
+        $headerSet[] = new Dkim($this->getEmptyDkimHeader()->getFieldValue() . $signature);
 
-        // append existing headers
+        // then append existing headers
         $headers = $message->getHeaders();
         foreach($headers as $header) {
             $headerSet[] = $header;
@@ -258,17 +292,6 @@ class Signer
 
         // add the newly created header set with the dkim signature
         $message->getHeaders()->addHeaders($headerSet);
-    }
-
-    /**
-     * Set configurable params.
-     *
-     * @param array $params
-     * @return void
-     */
-    private function setParams(array $params)
-    {
-        $this->params = $params;
     }
 
     /**
@@ -287,7 +310,7 @@ class Signer
      * @param Header\GenericHeader $emptyDkimHeader
      * @return void
      */
-    private function setEmptyDkimHeader(Header\GenericHeader $emptyDkimHeader)
+    private function setEmptyDkimHeader(Dkim $emptyDkimHeader)
     {
         $this->emptyDkimHeader = $emptyDkimHeader;
     }
@@ -344,23 +367,6 @@ class Signer
     private function getBodyHash(Message $message)
     {
         return base64_encode(pack("H*", sha1($message->getBody())));
-    }
-
-    /**
-     * Set (generate) OpenSSL key.
-     *
-     * @param string $privateKey
-     * @return void
-     */
-    private function setPrivateKey($privateKey)
-    {
-        $privateKey = <<<KEY
------BEGIN RSA PRIVATE KEY-----
-$privateKey
------END RSA PRIVATE KEY-----
-KEY;
-
-        $this->privateKey = openssl_get_privatekey($privateKey);
     }
 
     /**

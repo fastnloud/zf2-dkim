@@ -1,6 +1,13 @@
 CHANGELOG
 ========
 
+**v1.0.4** | 2014 - 05 - 29
+
+- Fixed encoding issues for non-ASCII e-mails.
+- Added Dkim header class.
+- Made the initial config less strict allowing more dynamic
+  implementations.
+
 **v1.0.3** | 2014 - 03 - 22
 
 - Added public method setParam to override params.

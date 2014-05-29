@@ -15,7 +15,7 @@ Zend Framework 2 DKIM Signer.
 <code>
     **I.e. in your Controller:**
     
-    $mail = new Zend\Mail\Message();
+    $mail = new \Zend\Mail\Message();
     $mail->setBody("Hello world!");
     $mail->setFrom('from@example.com');
     $mail->addTo('to@example.com');
@@ -26,7 +26,7 @@ Zend Framework 2 DKIM Signer.
     $signer->signMessage($mail);
     
     // send message
-    $transport = new Zend\Mail\Transport\Sendmail();
+    $transport = new \Zend\Mail\Transport\Sendmail();
     $transport->send($mail);
 </code>
 
