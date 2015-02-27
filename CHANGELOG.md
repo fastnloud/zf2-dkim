@@ -1,6 +1,10 @@
 CHANGELOG
 ========
 
+**v1.0.5** | 2015 - 02 - 27
+
+- Added composer.json.
+
 **v1.0.4** | 2014 - 05 - 29
 
 - Fixed encoding issues for non-ASCII e-mails.
