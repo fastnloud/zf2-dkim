@@ -18,7 +18,10 @@
     },
     "autoload": {
         "psr-0": {
-            "Dkim": "src"
-        }
+            "Dkim": "src/"
+        },
+        "classmap": [
+            "./Module.php"
+        ]
     }
 }
