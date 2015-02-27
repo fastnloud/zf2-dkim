@@ -3,6 +3,14 @@ README
 
 Zend Framework 2 DKIM Signer.
 
+**Installation**
+
+Installation of this module uses composer. For composer documentation, please refer to [https://getcomposer.org](https://getcomposer.org/ "getcomposer.org").
+
+<code>php composer.phar require fastnloud/zf2-dkim</code>
+
+Then add *Dkim* to your *config/application.config.php* file.
+
 **Usage**
 
 1. Create a DKIM domain key 
