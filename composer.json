@@ -1,0 +1,24 @@
+{
+    "name": "fastnloud/zf2-dkim",
+    "type": "library",
+    "description": "DKIM Signer for Zend\Mail",
+    "keywords": ["zf2","dkim"],
+    "homepage": "https://github.com/fastnloud/zf2-dkim",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jaap van Turnhout",
+            "email": "jaap@jaapsblog.nl",
+            "homepage": "http://www.jaapsblog.nl"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": ">=2.3.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Dkim": "src"
+        }
+    }
+}
