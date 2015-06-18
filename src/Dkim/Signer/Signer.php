@@ -186,7 +186,7 @@ PKEY;
      */
     private function normalizeNewlines($string)
     {
-        return preg_replace('~\R~u', "\r\n", $string);
+        return trim(preg_replace('~\R~u', "\r\n", $string)) . "\r\n";
     }
 
     /**
