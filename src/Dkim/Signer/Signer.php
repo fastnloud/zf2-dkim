@@ -55,8 +55,9 @@ class Signer
     /**
      * Set and validate DKIM options.
      *
-     * @param $options
-     * @return void
+     * @param array $options
+     * @throws \Exception
+     * @return \Dkim\Signer\Signer
      */
     public function __construct(array $options)
     {
@@ -137,6 +138,7 @@ class Signer
      * Set (generate) OpenSSL key.
      *
      * @param string $privateKey
+     * @throws \Exception
      * @return void
      */
     public function setPrivateKey($privateKey)
@@ -214,6 +216,7 @@ PKEY;
      * Generate empty DKIM header.
      *
      * @param Message $message
+     * @throws \Exception
      * @return void
      */
     private function generateEmptyDkimHeader(Message $message)
@@ -250,6 +253,7 @@ PKEY;
     /**
      * Generate signature.
      *
+     * @throws \Exception
      * @return void
      */
     private function generateSignature()
@@ -307,7 +311,7 @@ PKEY;
     /**
      * Set empty DKIM header.
      *
-     * @param Header\GenericHeader $emptyDkimHeader
+     * @param \Dkim\Header\Dkim $emptyDkimHeader
      * @return void
      */
     private function setEmptyDkimHeader(Dkim $emptyDkimHeader)
