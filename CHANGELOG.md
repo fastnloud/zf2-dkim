@@ -1,6 +1,13 @@
 CHANGELOG
 ========
 
+**v1.0.6** | 2016 - 03 - 14
+
+- Fix: Normalizing newlines (CRLF) of message body
+- Updated .dist files
+- Updated PHPDoc
+- Updated README
+
 **v1.0.5** | 2015 - 02 - 27
 
 - Added composer.json.
