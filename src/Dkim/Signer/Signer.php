@@ -3,6 +3,7 @@
 namespace Dkim\Signer;
 
 use Dkim\Header\Dkim;
+use Zend\Mail\Header\GenericHeader;
 use Zend\Mail\Message;
 use Zend\Mime\Message as MimeMessage;
 use Zend\Mail\Header;
@@ -171,9 +172,6 @@ PKEY;
         }
 
         $body = $this->normalizeNewlines($body);
-        if (!preg_match('/\r\n$/', $body)) {
-            $body = $body . "\r\n";
-        }
 
         $message->setBody($body);
     }
@@ -253,8 +251,8 @@ PKEY;
     /**
      * Generate signature.
      *
+     * @return string
      * @throws \Exception
-     * @return void
      */
     private function generateSignature()
     {
@@ -320,9 +318,9 @@ PKEY;
     }
 
     /**
-     * Get emtpy DKIM header.
+     * Get empty DKIM header.
      *
-     * @return Header\GenericHeader
+     * @return GenericHeader
      */
     private function getEmptyDkimHeader()
     {
