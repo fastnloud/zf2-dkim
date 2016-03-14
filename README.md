@@ -9,7 +9,7 @@ Installation of this module uses composer. For composer documentation, please re
 
 <code>php composer.phar require fastnloud/zf2-dkim</code>
 
-Then add *Dkim* to your *config/application.config.php* file.
+Create a *./config/autoload/dkim.global.php* and *./config/autoload/dkim.local.php* file with the configuration variable values as described in the project *.dist* files.
 
 **Usage**
 
