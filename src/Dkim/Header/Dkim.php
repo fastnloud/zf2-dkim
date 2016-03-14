@@ -2,6 +2,7 @@
 
 namespace Dkim\Header;
 
+use Zend\Mail\Header\Exception\InvalidArgumentException;
 use Zend\Mail\Header\HeaderInterface;
 use Zend\Mail\Header\Exception;
 
@@ -16,7 +17,7 @@ class Dkim implements HeaderInterface
     /**
      * @param string $headerLine
      * @return HeaderInterface|static
-     * @throws \Zend\Mail\Header\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function fromString($headerLine)
     {
@@ -24,7 +25,7 @@ class Dkim implements HeaderInterface
 
         // check to ensure proper header type for this factory
         if (strtolower($name) !== 'dkimsignature') {
-            throw new Exception\InvalidArgumentException('Invalid header line for DKIM-Signature string');
+            throw new InvalidArgumentException('Invalid header line for DKIM-Signature string');
         }
 
         $header = new static($value);
