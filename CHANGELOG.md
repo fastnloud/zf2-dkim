@@ -4,6 +4,7 @@ CHANGELOG
 **v1.0.6** | 2016 - 03 - 14
 
 - Fix: Normalizing newlines (CRLF) of message body
+- Added a default module.config.php configuration file
 - Updated .dist files
 - Updated PHPDoc
 - Updated README
