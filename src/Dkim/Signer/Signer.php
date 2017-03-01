@@ -23,7 +23,7 @@ class Signer
     private $params = array(
         // optional params having a default value set
         'v'  => '1',
-        'a'  => 'rsa-sha1',
+        'a'  => 'rsa-sha256',
 
         // required to set either in your config file or through the setParam method before signing (see
         // module.config.dist file)
@@ -363,14 +363,14 @@ PKEY;
     }
 
     /**
-     * Get Message body (sha1) hash.
+     * Get Message body (sha256) hash.
      *
      * @param Message $message
      * @return string
      */
     private function getBodyHash(Message $message)
     {
-        return base64_encode(pack("H*", sha1($message->getBody())));
+        return base64_encode(pack("H*", hash('sha256', $message->getBody())));
     }
 
     /**
