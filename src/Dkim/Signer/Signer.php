@@ -197,12 +197,14 @@ PKEY;
     {
         $params  = $this->getParams();
         $headersToSign = explode(':', $params['h']);
+        if (!in_array('dkim-signature', $headersToSign)) {
+            $headersToSign[] = 'dkim-signature';
+        }
 
-        $headers = $message->getHeaders();
-        foreach($headers as $header) {
-            $fieldName = strtolower($header->getFieldName());
-
-            if (in_array($fieldName, $headersToSign) || 'dkim-signature' == $fieldName) {
+        foreach($headersToSign as $fieldName) {
+            $fieldName = strtolower($fieldName);
+            $header = $message->getHeaders()->get($fieldName);
+            if ($header instanceof Header\HeaderInterface) {
                 $this->appendCanonizedHeader(
                     $fieldName . ':' . preg_replace('/\s+/', ' ', $header->getFieldValue(Header\HeaderInterface::FORMAT_ENCODED)) . "\r\n"
                 );
